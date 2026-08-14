@@ -1,0 +1,308 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const ResponsiveApp());
+}
+
+class ResponsiveApp extends StatelessWidget {
+  const ResponsiveApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Responsive Flutter App',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+        ),
+        useMaterial3: true,
+      ),
+      home: const ResponsiveHomePage(),
+    );
+  }
+}
+
+class ResponsiveHomePage extends StatefulWidget {
+  const ResponsiveHomePage({super.key});
+
+  @override
+  State<ResponsiveHomePage> createState() => _ResponsiveHomePageState();
+}
+
+class _ResponsiveHomePageState extends State<ResponsiveHomePage> {
+  int selectedIndex = 0;
+
+  final List<String> items = [
+    'Dashboard',
+    'Profile',
+    'Settings',
+    'Messages',
+    'Reports',
+    'Help',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // MediaQuery gets the screen size.
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Responsive Flutter App'),
+        centerTitle: true,
+      ),
+
+      // Desktop/tablet side navigation
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Desktop layout
+          if (constraints.maxWidth >= 900) {
+            return Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (index) {
+                    setState(() {
+                      selectedIndex = index;
+                    });
+                  },
+                  labelType: NavigationRailLabelType.all,
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.dashboard),
+                      label: Text('Dashboard'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.person),
+                      label: Text('Profile'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.settings),
+                      label: Text('Settings'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.message),
+                      label: Text('Messages'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.bar_chart),
+                      label: Text('Reports'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.help),
+                      label: Text('Help'),
+                    ),
+                  ],
+                ),
+
+                const VerticalDivider(width: 1),
+
+                Expanded(
+                  child: _buildContent(screenWidth),
+                ),
+              ],
+            );
+          }
+
+          // Tablet/mobile layout
+          return _buildContent(screenWidth);
+        },
+      ),
+
+      // Bottom navigation for smaller screens
+      bottomNavigationBar: MediaQuery.of(context).size.width < 900
+          ? NavigationBar(
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (index) {
+                setState(() {
+                  selectedIndex = index;
+                });
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ],
+            )
+          : null,
+    );
+  }
+
+  Widget _buildContent(double screenWidth) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        final bool isLandscape =
+            orientation == Orientation.landscape;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                items[selectedIndex],
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                'Responsive Flutter Application',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Information cards
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  int columns;
+
+                  if (constraints.maxWidth >= 900) {
+                    columns = 3;
+                  } else if (constraints.maxWidth >= 600) {
+                    columns = 2;
+                  } else {
+                    columns = 1;
+                  }
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 6,
+                    gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      crossAxisSpacing: 15,
+                      mainAxisSpacing: 15,
+                      childAspectRatio:
+                          isLandscape ? 2.0 : 1.5,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _getIcon(index),
+                                size: 45,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                items[index],
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Responsive content',
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+
+              const SizedBox(height: 25),
+
+              // Expanded example
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.devices,
+                      size: 40,
+                    ),
+                    const SizedBox(width: 15),
+
+                    Expanded(
+                      child: Text(
+                        'Screen Width: ${screenWidth.toStringAsFixed(0)} px\n'
+                        'Orientation: ${isLandscape ? "Landscape" : "Portrait"}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Footer
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(15),
+                child: Text(
+                  'Device Category: ${_getDeviceCategory(screenWidth)}\n'
+                  'Orientation: ${isLandscape ? "Landscape" : "Portrait"}\n'
+                  'Screen Width: ${screenWidth.toStringAsFixed(0)} px',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getIcon(int index) {
+    const icons = [
+      Icons.dashboard,
+      Icons.person,
+      Icons.settings,
+      Icons.message,
+      Icons.bar_chart,
+      Icons.help,
+    ];
+
+    return icons[index];
+  }
+
+  String _getDeviceCategory(double width) {
+    if (width < 600) {
+      return 'Mobile';
+    } else if (width < 900) {
+      return 'Tablet';
+    } else {
+      return 'Desktop';
+    }
+  }
+}
